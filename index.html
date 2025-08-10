@@ -1,427 +1,370 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroNest AI - Modern Study Assistant</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Using a Google Font for better typography */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroNest AI - Modern Study Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Using a Google Font for better typography */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            scroll-behavior: smooth;
+            background-color: #f0f4f8; /* Softer background color */
+        }
+        
+        /* A more subtle, modern loading spinner */
+        .loader {
+            border: 4px solid #e5e7eb; /* Lighter grey */
+            border-top: 4px solid #3b82f6; /* Blue */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
 
-        body { 
-            font-family: 'Inter', sans-serif; 
-            scroll-behavior: smooth;
-            background-color: #f0f4f8; /* Softer background color */
-        }
-
-        /* A more subtle, modern loading spinner */
-        .loader {
-            border: 4px solid #e5e7eb; /* Lighter grey */
-            border-top: 4px solid #3b82f6; /* Blue */
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
-
-        /* Custom styles for revealable answers */
-        details > summary {
-            list-style: none;
-            transition: color 0.2s ease-in-out;
-        }
-        details > summary::-webkit-details-marker {
-            display: none;
-        }
-        details[open] > summary {
-            color: #1d4ed8; /* Darker blue when open */
-        }
-        .card {
-            background-color: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-        }
-        /* Style for the new speak button */
-        .speak-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0.25rem;
-            border-radius: 9999px; /* full */
-            transition: background-color 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 0.5rem;
-            vertical-align: middle;
-        }
-        .speak-btn:hover {
-            background-color: #e5e7eb; /* gray-200 */
-        }
-    </style>
+        /* Custom styles for revealable answers */
+        details > summary {
+            list-style: none;
+            transition: color 0.2s ease-in-out;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        details[open] > summary {
+            color: #1d4ed8; /* Darker blue when open */
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+    </style>
 </head>
 <body class="text-gray-700">
-    <div class="container mx-auto p-4 md:p-6 lg:p-8 max-w-6xl">
-        <header class="text-center mb-10">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 flex items-center justify-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-600" viewBox="0 0 20 20" fill="currentColor"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3.5a1 1 0 00.002 1.788l7 3.5a1 1 0 00.786 0l7-3.5a1 1 0 00.002-1.788l-7-3.5zM3 9.38l7 3.5 7-3.5v3.837l-7 3.5-7-3.5V9.38z" /></svg>
-                NeuroNest AI
-            </h1>
-            <p class="text-lg text-gray-500 mt-2">Transform your study material into powerful learning tools.</p>
-        </header>
+    <div class="container mx-auto p-4 md:p-6 lg:p-8 max-w-6xl">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 flex items-center justify-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-600" viewBox="0 0 20 20" fill="currentColor"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3.5a1 1 0 00.002 1.788l7 3.5a1 1 0 00.786 0l7-3.5a1 1 0 00.002-1.788l-7-3.5zM3 9.38l7 3.5 7-3.5v3.837l-7 3.5-7-3.5V9.38z" /></svg>
+                NeuroNest AI
+            </h1>
+            <p class="text-lg text-gray-500 mt-2">Transform your study material into powerful learning tools.</p>
+        </header>
 
-        <main>
-            <div class="card mb-8">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4">1. Enter Your Text</h2>
-                <p class="mb-4">Paste a chapter, article, or your notes below to get started.</p>
-                <textarea id="inputText" class="w-full h-60 p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-inner bg-gray-50" placeholder="Paste your text here..."></textarea>
+        <main>
+            <div class="card mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">1. Enter Your Text</h2>
+                <p class="mb-4">Paste a chapter, article, or your notes below to get started.</p>
+                <textarea id="inputText" class="w-full h-60 p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-inner bg-gray-50" placeholder="Paste your text here..."></textarea>
+                
+                <div class="mt-5 flex items-center justify-between">
+                    <label for="numQuestionsSelect" class="font-medium text-gray-700">Number of Questions:</label>
+                    <select id="numQuestionsSelect" class="rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="15">15</option>
+                    </select>
+                </div>
 
-                <div class="mt-5 flex items-center justify-between">
-                    <label for="numQuestionsSelect" class="font-medium text-gray-700">Number of Questions:</label>
-                    <select id="numQuestionsSelect" class="rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="5">5</option>
-                        <option value="10" selected>10</option>
-                        <option value="15">15</option>
-                    </select>
-                </div>
+                <button id="generateBtn" class="mt-5 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
+                    Generate Study Materials
+                </button>
+            </div>
 
-                <button id="generateBtn" class="mt-5 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
-                    Generate Study Materials
-                </button>
-            </div>
+            <div id="loading" class="hidden text-center my-12">
+                <div class="loader"></div>
+                <p class="text-gray-500 text-lg">NeuroNest AI is thinking...</p>
+            </div>
 
-            <div id="loading" class="hidden text-center my-12">
-                <div class="loader"></div>
-                <p class="text-gray-500 text-lg">NeuroNest AI is thinking...</p>
-            </div>
+            <!-- This div will hold all the generated results -->
+            <div id="results" class="hidden mt-10">
+                <h2 class="text-3xl font-bold text-center mb-8 text-gray-800">Your Study Kit</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Left Column -->
+                    <div class="space-y-8">
+                        <!-- Summary Section -->
+                        <section id="summary_section" class="card">
+                            <h3 class="text-2xl font-semibold border-b-2 border-gray-100 pb-3 mb-4 flex items-center gap-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                Summary
+                            </h3>
+                            <div id="summary" class="prose prose-lg text-gray-600"></div>
+                        </section>
 
-            <div id="results" class="hidden mt-10">
-                <h2 class="text-3xl font-bold text-center mb-8 text-gray-800">Your Study Kit</h2>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div class="space-y-8">
-                        <section id="summary_section" class="card">
-                            <h3 class="text-2xl font-semibold border-b-2 border-gray-100 pb-3 mb-4 flex items-center gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                Summary
-                            </h3>
-                            <div id="summary" class="prose prose-lg text-gray-600"></div>
-                        </section>
+                        <!-- Q&A Section -->
+                        <section id="qna_section" class="card">
+                            <h3 class="text-2xl font-semibold border-b-2 border-gray-100 pb-3 mb-4 flex items-center gap-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                Questions & Answers
+                            </h3>
+                            <div id="qna" class="space-y-6"></div>
+                        </section>
+                    </div>
 
-                        <section id="qna_section" class="card">
-                            <h3 class="text-2xl font-semibold border-b-2 border-gray-100 pb-3 mb-4 flex items-center gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                Questions & Answers
-                            </h3>
-                            <div id="qna" class="space-y-6"></div>
-                        </section>
-                    </div>
+                    <!-- Right Column -->
+                    <div class="space-y-8">
+                        <!-- MCQs Section -->
+                        <section id="mcq_section" class="card">
+                             <h3 class="text-2xl font-semibold border-b-2 border-gray-100 pb-3 mb-4 flex items-center gap-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                                Multiple-Choice Questions
+                            </h3>
+                            <div id="mcqs" class="space-y-6"></div>
+                            <button id="generateMoreMcqsBtn" class="hidden mt-6 w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                                Generate 5 More MCQs
+                            </button>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer class="text-center mt-12 text-gray-400">
+            <p>Powered by Google's Gemini API</p>
+        </footer>
+    </div>
 
-                    <div class="space-y-8">
-                        <section id="mcq_section" class="card">
-                             <h3 class="text-2xl font-semibold border-b-2 border-gray-100 pb-3 mb-4 flex items-center gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
-                                Multiple-Choice Questions
-                            </h3>
-                            <div id="mcqs" class="space-y-6"></div>
-                            <button id="generateMoreMcqsBtn" class="hidden mt-6 w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center justify-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                                Generate 5 More MCQs
-                            </button>
-                        </section>
-                    </div>
-                </div>
-            </div>
-        </main>
-        <footer class="text-center mt-12 text-gray-400">
-            <p>Powered by Google's Gemini API</p>
-        </footer>
-    </div>
+    <script>
+        // ==============================================================================
+        // 1. CONFIGURATION
+        // ==============================================================================
+        // API Key has been inserted below. The tool is ready to use.
+        const API_KEY = "AIzaSyDgHNom8RR1GBXZ8r9ZzExuQvKNck_54CA";
+        let mcqCounter = 0; // Counter for numbering MCQs
+        let qnaCounter = 0; // Counter for numbering Q&A
 
-    <script>
-        // ==============================================================================
-        // 1. CONFIGURATION
-        // ==============================================================================
-        // WARNING: Do not expose this key in a public-facing application.
-        // This should be handled by a backend proxy server.
-        const API_KEY = "AIzaSyDgHNom8RR1GBXZ8r9ZzExuQvKNck_54CA";
-        let mcqCounter = 0; // Counter for numbering MCQs
-        let qnaCounter = 0; // Counter for numbering Q&A
+        // ==============================================================================
+        // 2. CORE API FUNCTIONS (JavaScript version)
+        // ==============================================================================
 
-        // ==============================================================================
-        // 2. CORE API & HELPER FUNCTIONS
-        // ==============================================================================
+        /**
+         * Sends a request to the Gemini API.
+         */
+        async function callGeminiApi(prompt, schema = null) {
+            if (API_KEY === "YOUR_API_KEY") {
+                return { error: "Please replace 'YOUR_API_KEY' with your actual Google AI API key in the script." };
+            }
 
-        /**
-         * Speaks the provided text using the browser's Web Speech API.
-         * @param {string} textToSpeak - The text to be synthesized into speech.
-         */
-        function speakText(textToSpeak) {
-            if ('speechSynthesis' in window) {
-                // Cancel any ongoing speech to prevent overlap
-                window.speechSynthesis.cancel();
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+            const headers = { 'Content-Type': 'application/json' };
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
 
-                const utterance = new SpeechSynthesisUtterance(textToSpeak);
-                utterance.lang = 'en-US'; // Set language for better pronunciation
-                window.speechSynthesis.speak(utterance);
-            } else {
-                alert('Sorry, your browser does not support text-to-speech.');
-            }
-        }
+            if (schema) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: schema
+                };
+            }
 
-        /**
-         * Sends a request to the Gemini API.
-         */
-        async function callGeminiApi(prompt, schema = null) {
-            if (API_KEY === "YOUR_API_KEY") {
-                return { error: "Please replace 'YOUR_API_KEY' with your actual Google AI API key in the script." };
-            }
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(payload)
+                });
 
-            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-            const headers = { 'Content-Type': 'application/json' };
-            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorBody.error.message}`);
+                }
 
-            if (schema) {
-                payload.generationConfig = {
-                    responseMimeType: "application/json",
-                    responseSchema: schema
-                };
-            }
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0) {
+                    const part = result.candidates[0].content.parts[0];
+                    return schema ? JSON.parse(part.text) : part.text;
+                } else {
+                    return { error: "The API response was empty or malformed." };
+                }
+            } catch (e) {
+                console.error("Error calling Gemini API:", e);
+                return { error: `Failed to fetch from API: ${e.message}` };
+            }
+        }
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify(payload)
-                });
+        /** Generates a summary of the provided text. */
+        function generateSummary(text) {
+            const prompt = `Summarize the following text in a clear and concise manner, capturing the main ideas and key points. The summary should be a single, well-written paragraph.\n\nText:\n\"\"\"\n${text}\n\"\"\"`;
+            return callGeminiApi(prompt);
+        }
 
-                if (!response.ok) {
-                    const errorBody = await response.json();
-                    throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorBody.error.message}`);
-                }
+        /** Generates MCQs from the provided text. */
+        function generateMcqs(text, numQuestions = 5) {
+            const prompt = `Generate exactly ${numQuestions} multiple-choice questions based on the following text. The questions should be different from typical examples and test deeper understanding. Each question must have five options labeled "A", "B", "C", "D", and "E", and you must provide the correct answer key.\n\nText:\n\"\"\"\n${text}\n\"\"\"`;
+            const mcqSchema = {
+                type: "OBJECT", properties: { questions: { type: "ARRAY", items: {
+                    type: "OBJECT", properties: {
+                        question_text: { type: "STRING" },
+                        options: { type: "OBJECT", properties: {
+                            A: { type: "STRING" }, B: { type: "STRING" },
+                            C: { type: "STRING" }, D: { type: "STRING" },
+                            E: { type: "STRING" }},
+                            required: ["A", "B", "C", "D", "E"] },
+                        correct_answer: { type: "STRING" }},
+                    required: ["question_text", "options", "correct_answer"] }}},
+                required: ["questions"]
+            };
+            return callGeminiApi(prompt, mcqSchema);
+        }
 
-                const result = await response.json();
+        /** Generates question-answer pairs from the provided text. */
+        function generateQna(text, numQuestions = 5) {
+            const prompt = `Generate exactly ${numQuestions} question-and-answer pairs based on the following text. The questions should test comprehension of key information.\n\nText:\n\"\"\"\n${text}\n\"\"\"`;
+            const qnaSchema = {
+                type: "OBJECT", properties: { qa_pairs: { type: "ARRAY", items: {
+                    type: "OBJECT", properties: {
+                        question: { type: "STRING" }, answer: { type: "STRING" }},
+                    required: ["question", "answer"] }}},
+                required: ["qa_pairs"]
+            };
+            return callGeminiApi(prompt, qnaSchema);
+        }
 
-                if (result.candidates && result.candidates.length > 0) {
-                    const part = result.candidates[0].content.parts[0];
-                    return schema ? JSON.parse(part.text) : part.text;
-                } else {
-                    return { error: "The API response was empty or malformed." };
-                }
-            } catch (e) {
-                console.error("Error calling Gemini API:", e);
-                return { error: `Failed to fetch from API: ${e.message}` };
-            }
-        }
+        // ==============================================================================
+        // 3. DOM MANIPULATION & EVENT LISTENERS
+        // ==============================================================================
 
-        /** Generates a summary of the provided text. */
-        function generateSummary(text) {
-            const prompt = `Summarize the following text in a clear and concise manner, capturing the main ideas and key points. The summary should be a single, well-written paragraph.\n\nText:\n\"\"\"\n${text}\n\"\"\"`;
-            return callGeminiApi(prompt);
-        }
+        /**
+         * Renders a list of MCQs to the page.
+         * @param {Array} questions - An array of question objects.
+         */
+        function displayMcqs(questions) {
+            const mcqsDiv = document.getElementById('mcqs');
+            if (questions && questions.length > 0) {
+                questions.forEach((mcq) => {
+                    mcqCounter++;
+                    const mcqElem = document.createElement('div');
+                    mcqElem.className = 'p-4 border border-gray-100 rounded-lg bg-gray-50/50';
+                    mcqElem.innerHTML = `
+                        <p class="font-semibold text-gray-800"><strong>Q${mcqCounter}:</strong> ${mcq.question_text}</p>
+                        <ul class="list-none mt-3 space-y-2 pl-2 text-gray-600">
+                            <li><strong>A)</strong> ${mcq.options.A}</li>
+                            <li><strong>B)</strong> ${mcq.options.B}</li>
+                            <li><strong>C)</strong> ${mcq.options.C}</li>
+                            <li><strong>D)</strong> ${mcq.options.D}</li>
+                            <li><strong>E)</strong> ${mcq.options.E}</li>
+                        </ul>
+                        <details class="mt-4 cursor-pointer group">
+                            <summary class="font-medium text-blue-600 hover:text-blue-800 inline-block">View Answer</summary>
+                            <p class="mt-2 p-3 bg-green-100 text-green-800 rounded-md">Correct Answer: <strong>${mcq.correct_answer}</strong></p>
+                        </details>
+                    `;
+                    mcqsDiv.appendChild(mcqElem);
+                });
+                document.getElementById('generateMoreMcqsBtn').classList.remove('hidden');
+            } else if (mcqCounter === 0) {
+                 mcqsDiv.innerHTML = '<p class="text-gray-500">Could not generate MCQs.</p>';
+            }
+        }
 
-        /** Generates MCQs from the provided text. */
-        function generateMcqs(text, numQuestions = 5) {
-            const prompt = `Generate exactly ${numQuestions} multiple-choice questions based on the following text. The questions should be different from typical examples and test deeper understanding. Each question must have five options labeled "A", "B", "C", "D", and "E", and you must provide the correct answer key.\n\nText:\n\"\"\"\n${text}\n\"\"\"`;
-            const mcqSchema = {
-                type: "OBJECT", properties: { questions: { type: "ARRAY", items: {
-                    type: "OBJECT", properties: {
-                        question_text: { type: "STRING" },
-                        options: { type: "OBJECT", properties: {
-                            A: { type: "STRING" }, B: { type: "STRING" },
-                            C: { type: "STRING" }, D: { type: "STRING" },
-                            E: { type: "STRING" }},
-                            required: ["A", "B", "C", "D", "E"] },
-                        correct_answer: { type: "STRING" }},
-                    required: ["question_text", "options", "correct_answer"] }}},
-                required: ["questions"]
-            };
-            return callGeminiApi(prompt, mcqSchema);
-        }
+        /**
+         * Renders a list of Q&A pairs to the page.
+         * @param {Array} qa_pairs - An array of Q&A objects.
+         */
+        function displayQna(qa_pairs) {
+            const qnaDiv = document.getElementById('qna');
+            if (qa_pairs && qa_pairs.length > 0) {
+                qa_pairs.forEach((qa) => {
+                    qnaCounter++;
+                    const qnaElem = document.createElement('div');
+                    qnaElem.className = 'p-4 border border-gray-100 rounded-lg bg-gray-50/50';
+                    qnaElem.innerHTML = `
+                        <p class="font-semibold text-gray-800"><strong>Q${qnaCounter}:</strong> ${qa.question}</p>
+                        <details class="mt-3 cursor-pointer group">
+                            <summary class="font-medium text-purple-600 hover:text-purple-800 inline-block">View Answer</summary>
+                            <p class="mt-2 p-3 bg-purple-100 text-purple-800 rounded-md">${qa.answer}</p>
+                        </details>
+                    `;
+                    qnaDiv.appendChild(qnaElem);
+                });
+            } else {
+                qnaDiv.innerHTML = '<p class="text-gray-500">Could not generate Q&A pairs.</p>';
+            }
+        }
 
-        /** Generates question-answer pairs from the provided text. */
-        function generateQna(text, numQuestions = 5) {
-            const prompt = `Generate exactly ${numQuestions} question-and-answer pairs based on the following text. The questions should test comprehension of key information.\n\nText:\n\"\"\"\n${text}\n\"\"\"`;
-            const qnaSchema = {
-                type: "OBJECT", properties: { qa_pairs: { type: "ARRAY", items: {
-                    type: "OBJECT", properties: {
-                        question: { type: "STRING" }, answer: { type: "STRING" }},
-                    required: ["question", "answer"] }}},
-                required: ["qa_pairs"]
-            };
-            return callGeminiApi(prompt, qnaSchema);
-        }
 
-        // ==============================================================================
-        // 3. DOM MANIPULATION & EVENT LISTENERS
-        // ==============================================================================
+        // Main "Generate" button listener
+        document.getElementById('generateBtn').addEventListener('click', async () => {
+            const text = document.getElementById('inputText').value;
+            if (!text.trim()) {
+                alert('Please paste some text into the text area first.');
+                return;
+            }
 
-        /**
-         * Renders a list of MCQs to the page.
-         * @param {Array} questions - An array of question objects.
-         */
-        function displayMcqs(questions) {
-            const mcqsDiv = document.getElementById('mcqs');
-            if (questions && questions.length > 0) {
-                questions.forEach((mcq) => {
-                    mcqCounter++;
-                    const mcqElem = document.createElement('div');
-                    mcqElem.className = 'p-4 border border-gray-100 rounded-lg bg-gray-50/50';
-                    // Sanitize answer text for data attribute
-                    const answerText = `Correct Answer: ${mcq.correct_answer.replace(/"/g, '&quot;')}`;
+            // Get the selected number of questions
+            const numQuestions = parseInt(document.getElementById('numQuestionsSelect').value, 10);
 
-                    mcqElem.innerHTML = `
-                        <p class="font-semibold text-gray-800"><strong>Q${mcqCounter}:</strong> ${mcq.question_text}</p>
-                        <ul class="list-none mt-3 space-y-2 pl-2 text-gray-600">
-                            <li><strong>A)</strong> ${mcq.options.A}</li>
-                            <li><strong>B)</strong> ${mcq.options.B}</li>
-                            <li><strong>C)</strong> ${mcq.options.C}</li>
-                            <li><strong>D)</strong> ${mcq.options.D}</li>
-                            <li><strong>E)</strong> ${mcq.options.E}</li>
-                        </ul>
-                        <details class="mt-4 cursor-pointer group">
-                            <summary class="font-medium text-blue-600 hover:text-blue-800 inline-block">View Answer</summary>
-                            <div class="mt-2 p-3 bg-green-100 text-green-800 rounded-md flex items-center justify-between">
-                                <span>Correct Answer: <strong>${mcq.correct_answer}</strong></span>
-                                <button class="speak-btn" data-text="${answerText}" aria-label="Read answer aloud">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.828 2.828a1 1 0 011.414 0A5.98 5.98 0 0115 10a5.98 5.98 0 01-1.757 4.243 1 1 0 01-1.414-1.414A3.986 3.986 0 0013 10a3.986 3.986 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                                </button>
-                            </div>
-                        </details>
-                    `;
-                    mcqsDiv.appendChild(mcqElem);
-                });
-                document.getElementById('generateMoreMcqsBtn').classList.remove('hidden');
-            } else if (mcqCounter === 0) {
-                 mcqsDiv.innerHTML = '<p class="text-gray-500">Could not generate MCQs.</p>';
-            }
-        }
+            // Reset state for a new generation
+            mcqCounter = 0;
+            qnaCounter = 0;
+            document.getElementById('mcqs').innerHTML = '';
+            document.getElementById('qna').innerHTML = '';
+            document.getElementById('generateMoreMcqsBtn').classList.add('hidden');
 
-        /**
-         * Renders a list of Q&A pairs to the page.
-         * @param {Array} qa_pairs - An array of Q&A objects.
-         */
-        function displayQna(qa_pairs) {
-            const qnaDiv = document.getElementById('qna');
-            if (qa_pairs && qa_pairs.length > 0) {
-                qa_pairs.forEach((qa) => {
-                    qnaCounter++;
-                    const qnaElem = document.createElement('div');
-                    qnaElem.className = 'p-4 border border-gray-100 rounded-lg bg-gray-50/50';
-                    // Sanitize answer text for data attribute
-                    const answerText = qa.answer.replace(/"/g, '&quot;');
+            // Show loading indicator and hide old results
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('results').classList.add('hidden');
 
-                    qnaElem.innerHTML = `
-                        <p class="font-semibold text-gray-800"><strong>Q${qnaCounter}:</strong> ${qa.question}</p>
-                        <details class="mt-3 cursor-pointer group">
-                            <summary class="font-medium text-purple-600 hover:text-purple-800 inline-block">View Answer</summary>
-                            <div class="mt-2 p-3 bg-purple-100 text-purple-800 rounded-md flex items-center justify-between">
-                                <span>${qa.answer}</span>
-                                <button class="speak-btn" data-text="${answerText}" aria-label="Read answer aloud">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-900" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.828 2.828a1 1 0 011.414 0A5.98 5.98 0 0115 10a5.98 5.98 0 01-1.757 4.243 1 1 0 01-1.414-1.414A3.986 3.986 0 0013 10a3.986 3.986 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                                </button>
-                            </div>
-                        </details>
-                    `;
-                    qnaDiv.appendChild(qnaElem);
-                });
-            } else {
-                qnaDiv.innerHTML = '<p class="text-gray-500">Could not generate Q&A pairs.</p>';
-            }
-        }
+            // Call all API functions concurrently for speed
+            const [summaryData, mcqsData, qnaData] = await Promise.all([
+                generateSummary(text),
+                generateMcqs(text, numQuestions),
+                generateQna(text, numQuestions)
+            ]);
+            
+            document.getElementById('loading').classList.add('hidden');
 
-        // Main "Generate" button listener
-        document.getElementById('generateBtn').addEventListener('click', async () => {
-            const text = document.getElementById('inputText').value;
-            if (!text.trim()) {
-                alert('Please paste some text into the text area first.');
-                return;
-            }
+            const anyError = [summaryData, mcqsData, qnaData].find(d => d && d.error);
+            if (anyError) {
+                alert('An error occurred: ' + anyError.error);
+                return;
+            }
 
-            // Get the selected number of questions
-            const numQuestions = parseInt(document.getElementById('numQuestionsSelect').value, 10);
+            // --- Display Results ---
+            const summaryDiv = document.getElementById('summary');
+            summaryDiv.innerHTML = summaryData ? `<p>${summaryData}</p>` : '<p class="text-gray-500">Could not generate summary.</p>';
 
-            // Reset state for a new generation
-            mcqCounter = 0;
-            qnaCounter = 0;
-            document.getElementById('mcqs').innerHTML = '';
-            document.getElementById('qna').innerHTML = '';
-            document.getElementById('generateMoreMcqsBtn').classList.add('hidden');
-            window.speechSynthesis.cancel(); // Stop any speech from previous results
+            displayMcqs(mcqsData.questions);
+            displayQna(qnaData.qa_pairs);
+            
+            document.getElementById('results').classList.remove('hidden');
+            window.scrollTo({ top: document.getElementById('results').offsetTop - 20, behavior: 'smooth' });
+        });
 
-            // Show loading indicator and hide old results
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('results').classList.add('hidden');
+        // "Generate More MCQs" button listener
+        document.getElementById('generateMoreMcqsBtn').addEventListener('click', async (e) => {
+            const btn = e.target.closest('button'); // Ensure we target the button itself
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Generating...';
+            btn.disabled = true;
 
-            // Call all API functions concurrently for speed
-            const [summaryData, mcqsData, qnaData] = await Promise.all([
-                generateSummary(text),
-                generateMcqs(text, numQuestions),
-                generateQna(text, numQuestions)
-            ]);
+            const text = document.getElementById('inputText').value;
+            const moreMcqsData = await generateMcqs(text, 5); // Always generate 5 more
+            
+            if (moreMcqsData.error) {
+                alert('An error occurred: ' + moreMcqsData.error);
+            } else {
+                displayMcqs(moreMcqsData.questions);
+            }
 
-            document.getElementById('loading').classList.add('hidden');
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        });
 
-            const anyError = [summaryData, mcqsData, qnaData].find(d => d && d.error);
-            if (anyError) {
-                alert('An error occurred: ' + anyError.error);
-                return;
-            }
-
-            // --- Display Results ---
-            const summaryDiv = document.getElementById('summary');
-            summaryDiv.innerHTML = summaryData ? `<p>${summaryData}</p>` : '<p class="text-gray-500">Could not generate summary.</p>';
-
-            displayMcqs(mcqsData.questions);
-            displayQna(qnaData.qa_pairs);
-
-            document.getElementById('results').classList.remove('hidden');
-            window.scrollTo({ top: document.getElementById('results').offsetTop - 20, behavior: 'smooth' });
-        });
-
-        // "Generate More MCQs" button listener
-        document.getElementById('generateMoreMcqsBtn').addEventListener('click', async (e) => {
-            const btn = e.target.closest('button');
-            const originalContent = btn.innerHTML;
-            btn.innerHTML = '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Generating...';
-            btn.disabled = true;
-
-            const text = document.getElementById('inputText').value;
-            const moreMcqsData = await generateMcqs(text, 5); // Always generate 5 more
-
-            if (moreMcqsData.error) {
-                alert('An error occurred: ' + moreMcqsData.error);
-            } else {
-                displayMcqs(moreMcqsData.questions);
-            }
-
-            btn.innerHTML = originalContent;
-            btn.disabled = false;
-        });
-
-        // NEW: Event listener for all speak buttons using event delegation
-        document.getElementById('results').addEventListener('click', (event) => {
-            // Find the closest parent button with the 'speak-btn' class
-            const speakButton = event.target.closest('.speak-btn');
-
-            if (speakButton) {
-                const textToSpeak = speakButton.dataset.text;
-                if (textToSpeak) {
-                    speakText(textToSpeak);
-                }
-            }
-        });
-
-    </script>
+    </script>
 </body>
+</html>
