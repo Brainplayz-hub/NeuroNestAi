@@ -70,9 +70,6 @@
             background-color: #e5e7eb; /* gray-200 */
         }
     </style>
-    
-    <script async="async" data-cfasync="false" src="//pl27388035.profitableratecpm.com/75b06efe28292a8375efd4b7de6b43fb/invoke.js"></script>
-    
 </head>
 <body class="text-gray-700">
     <div class="container mx-auto p-4 md:p-6 lg:p-8 max-w-6xl">
@@ -83,10 +80,6 @@
             </h1>
             <p class="text-lg text-gray-500 mt-2">Transform your study material into powerful learning tools.</p>
         </header>
-
-        <div class="my-8 flex justify-center">
-             <div id="container-75b06efe28292a8375efd4b7de6b43fb"></div>
-        </div>
 
         <main>
             <div class="card mb-8">
@@ -191,8 +184,8 @@
          * Sends a request to the Gemini API.
          */
         async function callGeminiApi(prompt, schema = null) {
-            if (API_KEY === "YOUR_API_KEY" || API_KEY === "AIzaSyDgHNom8RR1GBXZ8r9ZzExuQvKNck_54CA") { // Added your placeholder too
-                return { error: "Please replace the placeholder API key with your actual Google AI API key in the script." };
+            if (API_KEY === "YOUR_API_KEY") {
+                return { error: "Please replace 'YOUR_API_KEY' with your actual Google AI API key in the script." };
             }
 
             const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
@@ -432,4 +425,3 @@
 
     </script>
 </body>
-</html>
