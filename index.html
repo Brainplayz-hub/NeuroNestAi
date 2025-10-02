@@ -1,177 +1,188 @@
-import os
-import argparse
-import json
-import pathlib
-from PIL import Image
-import pytesseract
-import pdfplumber
-import docx
-import google.generativeai as genai
-
-# ==============================================================================
-# ⚠️ CRITICAL SECURITY WARNING ⚠️
-# The API key below is PUBLIC and COMPROMISED because you shared it.
-# Anyone can use this key, which could lead to charges on your account.
-#
-# FOR YOUR SECURITY:
-# 1. GO TO https://aistudio.google.com/app/apikey
-# 2. DELETE THIS KEY IMMEDIATELY.
-# 3. Create a new key and keep it PRIVATE.
-#
-# The BEST way to use your new key is to set it as an environment variable.
-# This script will try to use an environment variable first before falling
-# back to the hardcoded one.
-#
-# To set an environment variable:
-# - Mac/Linux: export GOOGLE_API_KEY="YOUR_NEW_PRIVATE_KEY"
-# - Windows:   setx GOOGLE_API_KEY "YOUR_NEW_PRIVATE_KEY"
-# (You'll need to restart your terminal after setting it)
-# ==============================================================================
-API_KEY_HARDCODED = "AIzaSyCx2Pv1fLQQZPijxBR3GmtV_yRLCS_xllo"
-
-def configure_api():
-    """Configures the Google Gemini API."""
-    api_key = os.getenv("GOOGLE_API_KEY", API_KEY_HARDCODED)
-    if not api_key:
-        print("🔴 ERROR: Google API Key not found.")
-        print("Please set the GOOGLE_API_KEY environment variable or hardcode it in the script.")
-        exit()
+<!DOCTYPE html>
+<html lang="en" class=""> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroNest AI - Modern Study Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    if api_key == API_KEY_HARDCODED:
-        print("🟡 WARNING: Using a hardcoded, public API key. Please switch to an environment variable for security.")
-
-    try:
-        genai.configure(api_key=api_key)
-        print("✅ Google Gemini API configured successfully.")
-    except Exception as e:
-        print(f"🔴 ERROR: Failed to configure Gemini API: {e}")
-        exit()
-
-def extract_text_from_file(filepath: str) -> str:
-    """
-    Extracts text from various file types (.pdf, .docx, .txt, images).
-    """
-    path = pathlib.Path(filepath)
-    if not path.exists():
-        return f"Error: File not found at {filepath}"
-
-    print(f"📄 Processing file: {path.name}...")
-    extension = path.suffix.lower()
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.7.0/mammoth.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     
-    try:
-        if extension == ".pdf":
-            with pdfplumber.open(path) as pdf:
-                return "\n".join(page.extract_text() for page in pdf.pages if page.extract_text())
-        elif extension == ".docx":
-            doc = docx.Document(path)
-            return "\n".join(para.text for para in doc.paragraphs if para.text)
-        elif extension in [".jpg", ".jpeg", ".png", ".tiff", ".bmp"]:
-            # Note: Tesseract must be installed on your system for this to work.
-            # See instructions in the setup guide.
-            return pytesseract.image_to_string(Image.open(path))
-        elif extension == ".txt":
-            return path.read_text(encoding='utf-8')
-        else:
-            return f"Error: Unsupported file type '{extension}'"
-    except Exception as e:
-        return f"Error processing file {path.name}: {e}"
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .loader { border: 4px solid #e5e7eb; border-top: 4px solid #3b82f6; border-radius: 50%; width: 50px; height: 50px; animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite; margin: 20px auto; }
+        .dark .loader { border-color: #374151; border-top-color: #3b82f6; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        details > summary { list-style: none; transition: color 0.2s ease-in-out; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] > summary { color: #1d4ed8; }
+        .dark details[open] > summary { color: #60a5fa; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
 
-def generate_study_materials(text: str, num_questions: int):
-    """
-    Generates a summary, Q&A pairs, and MCQs using the Gemini API.
-    """
-    if not text or len(text.strip()) < 50:
-        print("🔴 ERROR: Input text is too short to generate study materials.")
-        return
+        /* Animation Styles */
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        .listening-effect { border-color: #3b82f6; animation: pulse-glow 2s infinite; }
+        .mic-active { background-color: #fee2e2; color: #dc2626; border-color: #fecaca; animation: pulse-mic 2s infinite; }
+        .dark .mic-active { background-color: #450a0a; color: #f87171; border-color: #7f1d1d;}
+        @keyframes pulse-mic {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-black text-gray-700 dark:text-gray-300 transition-colors duration-300">
+    <div class="container mx-auto p-4 md:p-6 lg:p-8 max-w-6xl">
+        <header class="relative text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-gray-100 flex items-center justify-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-600 dark:text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3.5a1 1 0 00.002 1.788l7 3.5a1 1 0 00.786 0l7-3.5a1 1 0 00.002-1.788l-7-3.5zM3 9.38l7 3.5 7-3.5v3.837l-7 3.5-7-3.5V9.38z" /></svg>
+                NeuroNest AI
+            </h1>
+            <p class="text-lg text-gray-500 dark:text-gray-400 mt-2">Transform your study material into powerful learning tools.</p>
+            
+            <div class="absolute top-0 right-0 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 14.95a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zM5 11a1 1 0 100-2H4a1 1 0 100 2h1z" clip-rule="evenodd" /></svg>
+                <label for="darkModeToggle" class="relative inline-flex items-center cursor-pointer mx-2">
+                    <input type="checkbox" value="" id="darkModeToggle" class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+            </div>
+        </header>
 
-    print("\n🧠 Generating study materials with Gemini Pro...")
-    
-    try:
-        model = genai.GenerativeModel('gemini-pro')
+        <main>
+            <div class="card bg-white dark:bg-gray-900 shadow-lg dark:shadow-black/20 mb-8">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4 sm:gap-0">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">1. Provide Your Content</h2>
+                        <p id="inputHelperText" class="text-gray-500 dark:text-gray-400">Paste text, upload, or speak.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button id="micBtn" title="Start/Stop Voice Input" class="bg-white dark:bg-gray-800 dark:text-gray-300 border border-gray-300 dark:border-gray-700 text-gray-700 font-bold p-2.5 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 ease-in-out shadow-sm flex items-center justify-center">
+                            <svg id="micIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8h-1a6 6 0 11-12 0H3a7.001 7.001 0 006 6.93V17H7a1 1 0 100 2h6a1 1 0 100-2h-2v-2.07z" clip-rule="evenodd" /></svg>
+                        </button>
+                        <label for="fileUpload" class="bg-white dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200 ease-in-out shadow-sm cursor-pointer flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                            Upload File
+                        </label>
+                        <input type="file" id="fileUpload" class="hidden" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png">
+                    </div>
+                </div>
 
-        # --- Generate Summary ---
-        summary_prompt = f"""
-        Summarize the following text clearly and concisely, capturing the main ideas. 
-        The summary should be a single, well-written paragraph.
+                <textarea id="inputText" class="w-full h-60 p-4 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-inner bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500" placeholder="Your text will appear here..."></textarea>
+                
+                <div class="mt-5 flex items-center justify-between">
+                    <label for="numQuestionsInput" class="font-medium text-gray-700 dark:text-gray-300">Number of Questions to Generate:</label>
+                    <input type="number" id="numQuestionsInput" value="10" min="1" max="20" class="w-24 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-center shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
 
-        Text:
-        \"\"\"
-        {text}
-        \"\"\"
-        """
-        summary_response = model.generate_content(summary_prompt)
-        summary = summary_response.text
+                <button id="generateBtn" class="mt-5 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
+                    Generate Study Materials
+                </button>
+            </div>
 
-        # --- Generate Q&A and MCQs ---
-        qa_mcq_prompt = f"""
-        Based on the text provided, generate exactly {num_questions} study questions.
-        Return the output as a single valid JSON object with two keys: "qna_pairs" and "mcqs".
+            <div id="loading" class="hidden text-center my-12">
+                <div class="loader"></div>
+                <p class="text-gray-500 dark:text-gray-400 text-lg">NeuroNest AI is thinking...</p>
+            </div>
 
-        - "qna_pairs": A list of objects, where each object has a "question" and an "answer".
-        - "mcqs": A list of objects, where each object has "question_text", an "options" object (with keys "A", "B", "C", "D"), and a "correct_answer" key (e.g., "A").
+            <div id="results" class="hidden mt-10">
+                 <h2 class="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">Your Study Kit</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="space-y-8">
+                        <section id="summary_section" class="card bg-white dark:bg-gray-900 shadow-lg dark:shadow-black/20"></section>
+                        <section id="qna_section" class="card bg-white dark:bg-gray-900 shadow-lg dark:shadow-black/20"></section>
+                    </div>
+                    <div class="space-y-8">
+                        <section id="mcq_section" class="card bg-white dark:bg-gray-900 shadow-lg dark:shadow-black/20"></section>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer class="text-center mt-12 text-gray-400 dark:text-gray-600">
+            <p>Powered by Google's Gemini API</p>
+        </footer>
+    </div>
 
-        Text:
-        \"\"\"
-        {text}
-        \"\"\"
-        """
-        qa_mcq_response = model.generate_content(qa_mcq_prompt)
+    <script>
+        // ==============================================================================
+        // CONFIGURATION & INITIALIZATION
+        // ==============================================================================
+        const API_KEY = "AIzaSyD2fC4Ppq134GQpvMWUEyJfKXQ_fLZ7IV8";
+        let mcqCounter = 0; 
+        let qnaCounter = 0;
+        let allMcqs = [];
+
+        if (window.pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+        }
+
+        // ==============================================================================
+        // DARK MODE LOGIC
+        // ==============================================================================
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const htmlEl = document.documentElement;
+
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            htmlEl.classList.toggle('dark', savedTheme === 'dark');
+            darkModeToggle.checked = savedTheme === 'dark';
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            htmlEl.classList.add('dark');
+            darkModeToggle.checked = true;
+            localStorage.setItem('theme', 'dark');
+        }
+
+        darkModeToggle.addEventListener('change', () => {
+            htmlEl.classList.toggle('dark');
+            localStorage.setItem('theme', htmlEl.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        // ==============================================================================
+        // SPEECH RECOGNITION, FILE PROCESSING, API CALLS, AND DOM MANIPULATION
+        // ==============================================================================
+        // NOTE: The rest of the script is unchanged and included for completeness.
         
-        # Clean the response to ensure it's valid JSON
-        json_response_text = qa_mcq_response.text.strip().replace("```json", "").replace("```", "")
-        questions_data = json.loads(json_response_text)
-
-        # --- Print Results ---
-        print("\n" + "="*50)
-        print("✨ Your Study Kit ✨")
-        print("="*50)
-
-        print("\n## 📝 Summary")
-        print("-" * 20)
-        print(summary)
-
-        print("\n\n## ❓ Questions & Answers")
-        print("-" * 20)
-        for i, qa in enumerate(questions_data.get("qna_pairs", []), 1):
-            print(f"{i}. Question: {qa['question']}")
-            print(f"   Answer: {qa['answer']}\n")
-
-        print("\n## ✅ Multiple-Choice Questions")
-        print("-" * 20)
-        for i, mcq in enumerate(questions_data.get("mcqs", []), 1):
-            print(f"{i}. {mcq['question_text']}")
-            for key, value in mcq['options'].items():
-                print(f"   {key}) {value}")
-            print(f"   Correct Answer: {mcq['correct_answer']}\n")
-
-    except json.JSONDecodeError:
-        print("🔴 ERROR: The model returned an invalid JSON format for questions. Please try again.")
-        print("Raw model output:", qa_mcq_response.text)
-    except Exception as e:
-        print(f"🔴 An error occurred while generating content: {e}")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="NeuroNest AI: Generate study materials from text or files.")
-    parser.add_argument("--file", type=str, help="Path to a file (.txt, .pdf, .docx, .png, .jpg) to process.")
-    parser.add_argument("--text", type=str, help="A string of text to process directly.")
-    parser.add_argument("--num_questions", type=int, default=5, help="Number of questions to generate for Q&A and MCQs.")
-    
-    args = parser.parse_args()
-
-    configure_api()
-
-    input_text = ""
-    if args.file:
-        input_text = extract_text_from_file(args.file)
-    elif args.text:
-        input_text = args.text
-    else:
-        print("🔴 ERROR: No input provided. Please use --file or --text.")
-        parser.print_help()
-        exit()
-
-    if input_text.startswith("Error:"):
-        print(f"🔴 {input_text}")
-    else:
-        generate_study_materials(input_text, args.num_questions)
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const micBtn = document.getElementById('micBtn');
+        const textArea = document.getElementById('inputText');
+        const inputHelperText = document.getElementById('inputHelperText');
+        let recognition;
+        let isListening = false;
+        let originalTextBeforeListening = '';
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            recognition.onstart = () => { isListening = true; micBtn.classList.add('mic-active'); textArea.classList.add('listening-effect'); inputHelperText.textContent = 'Listening...'; originalTextBeforeListening = textArea.value ? textArea.value + ' ' : ''; };
+            recognition.onend = () => { isListening = false; micBtn.classList.remove('mic-active'); textArea.classList.remove('listening-effect'); inputHelperText.textContent = 'Paste text, upload, or speak.'; };
+            recognition.onerror = (event) => { console.error('Speech recognition error:', event.error); if (event.error === 'not-allowed') { alert('Microphone access was denied. Please allow microphone access in your browser settings to use this feature.'); } isListening = false; micBtn.classList.remove('mic-active'); textArea.classList.remove('listening-effect'); inputHelperText.textContent = 'Paste text, upload, or speak.'; };
+            recognition.onresult = (event) => { let interim_transcript = ''; let final_transcript = ''; for (let i = event.resultIndex; i < event.results.length; ++i) { if (event.results[i].isFinal) { final_transcript += event.results[i][0].transcript; } else { interim_transcript += event.results[i][0].transcript; } } textArea.value = originalTextBeforeListening + final_transcript + interim_transcript; };
+            micBtn.addEventListener('click', () => { if (isListening) { recognition.stop(); } else { recognition.start(); } });
+        } else { console.log('Speech Recognition not supported in this browser.'); micBtn.style.display = 'none'; }
+        async function handleFileUpload(event) { const file = event.target.files[0]; if (!file) return; const helperText = document.getElementById('inputHelperText'); const extension = file.name.split('.').pop().toLowerCase(); helperText.textContent = `Processing "${file.name}"...`; textArea.value = "Extracting content, please wait..."; try { let extractedText = ''; if (extension === 'pdf') { extractedText = await extractTextFromPdf(file); } else if (extension === 'docx') { extractedText = await extractTextFromDocx(file); } else if (['jpg', 'jpeg', 'png', 'webp'].includes(extension)) { extractedText = await extractTextFromImage(file); } else if (extension === 'txt') { extractedText = await extractTextFromTxt(file); } else { throw new Error(`Unsupported file type: .${extension}`); } textArea.value = extractedText; helperText.textContent = `Text successfully extracted from "${file.name}".`; } catch (error) { console.error('Error processing file:', error); alert(`Failed to process the file. ${error.message}`); helperText.textContent = 'Paste text, upload, or speak.'; textArea.value = ""; } event.target.value = ''; }
+        function readFileAsArrayBuffer(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsArrayBuffer(file); }); }
+        function readFileAsText(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsText(file); }); }
+        async function extractTextFromPdf(file) { const arrayBuffer = await readFileAsArrayBuffer(file); const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise; let fullText = ''; for (let i = 1; i <= pdf.numPages; i++) { const page = await pdf.getPage(i); const textContent = await page.getTextContent(); fullText += textContent.items.map(s => s.str).join(' ') + '\n\n'; } return fullText.trim(); }
+        async function extractTextFromDocx(file) { const arrayBuffer = await readFileAsArrayBuffer(file); const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer }); return result.value; }
+        async function extractTextFromTxt(file) { return await readFileAsText(file); }
+        async function extractTextFromImage(file) { const helperText = document.getElementById('inputHelperText'); helperText.textContent = 'Initializing OCR engine...'; const worker = await Tesseract.createWorker({ logger: m => { if (m.status === 'recognizing text') { const progress = Math.round(m.progress * 100); helperText.textContent = `Recognizing text... ${progress}%`; } } }); await worker.loadLanguage('eng'); await worker.initialize('eng'); const { data: { text } } = await worker.recognize(file); await worker.terminate(); return text; }
+        async function callGeminiApi(prompt, schema = null) { if (API_KEY.includes("YOUR_API_KEY")) { return { error: "Please insert a valid Google API key in the script." }; const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;const headers = { 'Content-Type': 'application/json' }; const body = { contents: [{ parts: [{ text: prompt }] }] }; if (schema) { body.generationConfig = { responseMimeType: "application/json", responseSchema: schema }; } try { const response = await fetch(API_URL, { method: 'POST', headers, body: JSON.stringify(body) }); if (!response.ok) { const errorBody = await response.json(); throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorBody.error.message}`); } const result = await response.json(); if (result.candidates && result.candidates.length > 0) { const part = result.candidates[0].content.parts[0]; return schema ? JSON.parse(part.text) : part.text; } return { error: "The API response was empty or malformed." }; } catch (e) { console.error("Error calling Gemini API:", e); return { error: `Failed to fetch from API: ${e.message}` }; } }
+        function generateSummary(text) { const prompt = `Summarize the following text clearly and concisely, capturing the main ideas. The summary should be a single, well-written paragraph.\n\nText:\n\"\"\"\n${text}\n\"\"\"`; return callGeminiApi(prompt); }
+        function generateMcqs(text, numQuestions) { const prompt = `Generate exactly ${numQuestions} multiple-choice questions from the text. Each question must have five options (A, B, C, D, E) and a correct answer key.\n\nText:\n\"\"\"\n${text}\n\"\"\"`; const mcqSchema = { type: "OBJECT", properties: { questions: { type: "ARRAY", items: { type: "OBJECT", properties: { question_text: { type: "STRING" }, options: { type: "OBJECT", properties: { A: { type: "STRING" }, B: { type: "STRING" }, C: { type: "STRING" }, D: { type: "STRING" }, E: { type: "STRING" }}, required: ["A", "B", "C", "D", "E"] }, correct_answer: { type: "STRING" }}, required: ["question_text", "options", "correct_answer"] }}}, required: ["questions"] }; return callGeminiApi(prompt, mcqSchema); }
+        function generateQna(text, numQuestions) { const prompt = `Generate exactly ${numQuestions} question-and-answer pairs based on the text.\n\nText:\n\"\"\"\n${text}\n\"\"\"`; const qnaSchema = { type: "OBJECT", properties: { qa_pairs: { type: "ARRAY", items: { type: "OBJECT", properties: { question: { type: "STRING" }, answer: { type: "STRING" }}, required: ["question", "answer"] }}}, required: ["qa_pairs"] }; return callGeminiApi(prompt, qnaSchema); }
+        document.getElementById('fileUpload').addEventListener('change', handleFileUpload);
+        document.getElementById('generateBtn').addEventListener('click', async () => { const text = textArea.value; if (!text.trim() || text.includes("Extracting content")) { alert('Please provide text or wait for the file to finish processing.'); return; } const numQuestionsInput = document.getElementById('numQuestionsInput'); const numQuestions = parseInt(numQuestionsInput.value, 10); if (isNaN(numQuestions) || numQuestions < 1 || numQuestions > 20) { alert('Please enter a number of questions between 1 and 20.'); numQuestionsInput.focus(); return; } mcqCounter = qnaCounter = 0; allMcqs = []; document.getElementById('loading').classList.remove('hidden'); document.getElementById('results').classList.add('hidden'); const [summaryData, mcqsData, qnaData] = await Promise.all([generateSummary(text), generateMcqs(text, numQuestions), generateQna(text, numQuestions)]); document.getElementById('loading').classList.add('hidden'); const anyError = [summaryData, mcqsData, qnaData].find(d => d && d.error); if (anyError) { alert('An error occurred: ' + anyError.error); return; } document.getElementById('summary_section').innerHTML = `<h3 class="text-2xl font-semibold border-b-2 border-gray-100 dark:border-gray-700 pb-3 mb-4 flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Summary</h3><div class="prose dark:prose-invert prose-lg text-gray-600 dark:text-gray-300">${summaryData ? `<p>${summaryData.replace(/\n/g, '<br>')}</p>` : 'Could not generate summary.'}</div>`; let qnaHtml = `<h3 class="text-2xl font-semibold border-b-2 border-gray-100 dark:border-gray-700 pb-3 mb-4 flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Questions & Answers</h3>`; if (qnaData.qa_pairs) qnaData.qa_pairs.forEach(qa => { qnaCounter++; qnaHtml += `<div class="p-4 border border-gray-100 dark:border-gray-800 rounded-lg bg-gray-50/50 dark:bg-black/20"><p class="font-semibold text-gray-800 dark:text-gray-100"><strong>Q${qnaCounter}:</strong> ${qa.question}</p><details class="mt-3 cursor-pointer"><summary class="font-medium text-purple-600 dark:text-purple-400 hover:text-purple-800">View Answer</summary><p class="mt-2 p-3 bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300 rounded-md">${qa.answer}</p></details></div>`; }); document.getElementById('qna_section').innerHTML = `<div class="space-y-6">${qnaHtml}</div>`; let mcqHtml = `<h3 class="text-2xl font-semibold border-b-2 border-gray-100 dark:border-gray-700 pb-3 mb-4 flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>Multiple-Choice Questions</h3>`; if (mcqsData.questions) { allMcqs = mcqsData.questions; mcqsData.questions.forEach(mcq => { mcqCounter++; mcqHtml += `<div class="p-4 border border-gray-100 dark:border-gray-800 rounded-lg bg-gray-50/50 dark:bg-black/20"><p class="font-semibold text-gray-800 dark:text-gray-100"><strong>Q${mcqCounter}:</strong> ${mcq.question_text}</p><ul class="list-none mt-3 space-y-2 pl-2 text-gray-600 dark:text-gray-300"><li><strong>A)</strong> ${mcq.options.A}</li><li><strong>B)</strong> ${mcq.options.B}</li><li><strong>C)</strong> ${mcq.options.C}</li><li><strong>D)</strong> ${mcq.options.D}</li><li><strong>E)</strong> ${mcq.options.E}</li></ul><details class="mt-4 cursor-pointer"><summary class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800">View Answer</summary><p class="mt-2 p-3 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 rounded-md">Correct Answer: <strong>${mcq.correct_answer}</strong></p></details></div>`; }); } mcqHtml += `<button id="generateMoreMcqsBtn" class="hidden mt-6 w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Generate 5 More MCQs</button>`; document.getElementById('mcq_section').innerHTML = `<div class="space-y-6">${mcqHtml}</div>`; if (mcqsData.questions && mcqsData.questions.length > 0) { document.getElementById('generateMoreMcqsBtn').classList.remove('hidden'); document.getElementById('generateMoreMcqsBtn').addEventListener('click', async (e) => { const btn = e.target.closest('button'); const originalContent = btn.innerHTML; btn.innerHTML = '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Generating...'; btn.disabled = true; const moreMcqsData = await generateMcqs(textArea.value, 5); if (moreMcqsData.error) { alert('An error occurred: ' + moreMcqsData.error); } else if (moreMcqsData.questions) { let currentMcqHtml = ''; allMcqs.push(...moreMcqsData.questions); moreMcqsData.questions.forEach(mcq => { mcqCounter++; currentMcqHtml += `<div class="p-4 border border-gray-100 dark:border-gray-800 rounded-lg bg-gray-50/50 dark:bg-black/20"><p class="font-semibold text-gray-800 dark:text-gray-100"><strong>Q${mcqCounter}:</strong> ${mcq.question_text}</p><ul class="list-none mt-3 space-y-2 pl-2 text-gray-600 dark:text-gray-300"><li><strong>A)</strong> ${mcq.options.A}</li><li><strong>B)</strong> ${mcq.options.B}</li><li><strong>C)</strong> ${mcq.options.C}</li><li><strong>D)</strong> ${mcq.options.D}</li><li><strong>E)</strong> ${mcq.options.E}</li></ul><details class="mt-4 cursor-pointer"><summary class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800">View Answer</summary><p class="mt-2 p-3 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 rounded-md">Correct Answer: <strong>${mcq.correct_answer}</strong></p></details></div>`; }); btn.insertAdjacentHTML('beforebegin', currentMcqHtml); } btn.innerHTML = originalContent; btn.disabled = false; }); } document.getElementById('results').classList.remove('hidden'); window.scrollTo({ top: document.getElementById('results').offsetTop - 20, behavior: 'smooth' }); });
+    </script>
+</body>
+</html>
